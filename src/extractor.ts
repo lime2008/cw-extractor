@@ -194,6 +194,22 @@ const createBrowserEnvironment = () => {
             now: () => Date.now()
         },
         requestAnimationFrame: (cb: () => void) => setTimeout(cb, 16),
+        DOMParser: class {
+        parseFromString(string : any, contentType : any) {
+            return {
+              documentElement: {
+                tagName: "HTML",
+                children: [
+                  { tagName: "HEAD" },
+                  { tagName: "BODY", innerHTML: string }
+                ]
+              },
+              querySelector: () => null,
+              querySelectorAll: () => []
+            };
+          }
+        },
+        alert: () => {},
         // 添加更多浏览器API
         localStorage: {
             getItem: () => null,
