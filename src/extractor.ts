@@ -5,6 +5,8 @@ export interface IWidgetTypeBase {
     type: `${string}_WIDGET`;
     title: string;
     icon: string;
+    author: string;
+    docs: string;
     version: string;
     isInvisibleWidget: boolean;
     isGlobalWidget: boolean;
@@ -188,6 +190,144 @@ const createBrowserEnvironment = () => {
     };
     
     const globalVars: Record<string, any> = {
+    Array: class {
+        static isArray(arg: any) {
+            return arg instanceof Array;
+        }
+        // 其他 Array 静态方法可以按需添加
+    },
+    
+    Date: Date,
+    
+    WeakMap: WeakMap,
+
+    Object: Object,
+    
+    Error: Error,
+    
+    Symbol: Symbol,
+    
+    
+    StructuredClone: {
+        // 简单模拟，实际使用时可能需要更复杂的实现
+        clone<T>(value: T): T {
+            return JSON.parse(JSON.stringify(value));
+        }
+    },
+    
+    Map: class {
+        private _data = new Map();
+        
+        set(key: any, value: any) {
+            this._data.set(key, value);
+            return this;
+        }
+        
+        get(key: any) {
+            return this._data.get(key);
+        }
+        
+        has(key: any) {
+            return this._data.has(key);
+        }
+        
+        delete(key: any) {
+            return this._data.delete(key);
+        }
+        
+        clear() {
+            this._data.clear();
+        }
+        
+        get size() {
+            return this._data.size;
+        }
+    },
+    
+    Set: class {
+        private _data = new Set();
+        
+        add(value: any) {
+            this._data.add(value);
+            return this;
+        }
+        
+        has(value: any) {
+            return this._data.has(value);
+        }
+        
+        delete(value: any) {
+            return this._data.delete(value);
+        }
+        
+        clear() {
+            this._data.clear();
+        }
+        
+        get size() {
+            return this._data.size;
+        }
+    },
+    
+    Math: {
+        PI: Math.PI,
+        E: Math.E,
+        LN2: Math.LN2,
+        LN10: Math.LN10,
+        LOG2E: Math.LOG2E,
+        LOG10E: Math.LOG10E,
+        SQRT1_2: Math.SQRT1_2,
+        SQRT2: Math.SQRT2,
+        
+        abs(x: number) { return Math.abs(x); },
+        acos(x: number) { return Math.acos(x); },
+        acosh(x: number) { return Math.acosh(x); },
+        asin(x: number) { return Math.asin(x); },
+        asinh(x: number) { return Math.asinh(x); },
+        atan(x: number) { return Math.atan(x); },
+        atan2(y: number, x: number) { return Math.atan2(y, x); },
+        atanh(x: number) { return Math.atanh(x); },
+        cbrt(x: number) { return Math.cbrt(x); },
+        ceil(x: number) { return Math.ceil(x); },
+        clz32(x: number) { return Math.clz32(x); },
+        cos(x: number) { return Math.cos(x); },
+        cosh(x: number) { return Math.cosh(x); },
+        exp(x: number) { return Math.exp(x); },
+        expm1(x: number) { return Math.expm1(x); },
+        floor(x: number) { return Math.floor(x); },
+        fround(x: number) { return Math.fround(x); },
+        hypot(...values: number[]) { return Math.hypot(...values); },
+        imul(a: number, b: number) { return Math.imul(a, b); },
+        log(x: number) { return Math.log(x); },
+        log10(x: number) { return Math.log10(x); },
+        log1p(x: number) { return Math.log1p(x); },
+        log2(x: number) { return Math.log2(x); },
+        max(...values: number[]) { return Math.max(...values); },
+        min(...values: number[]) { return Math.min(...values); },
+        pow(x: number, y: number) { return Math.pow(x, y); },
+        random() { return Math.random(); },
+        round(x: number) { return Math.round(x); },
+        sign(x: number) { return Math.sign(x); },
+        sin(x: number) { return Math.sin(x); },
+        sinh(x: number) { return Math.sinh(x); },
+        sqrt(x: number) { return Math.sqrt(x); },
+        tan(x: number) { return Math.tan(x); },
+        tanh(x: number) { return Math.tanh(x); },
+        trunc(x: number) { return Math.trunc(x); }
+    },
+    
+    Proxy: function(target: any, handler: any) {
+        return new Proxy(target, handler);
+    },
+    
+    JSON: {
+        parse(text: string) {
+            return JSON.parse(text);
+        },
+        stringify(value: any) {
+            return JSON.stringify(value);
+        }
+    },
         document: fakeDocument,
         console: silentConsole,
         performance: {
@@ -313,6 +453,16 @@ const createBrowserEnvironment = () => {
             return true;
         }
     });
+        
+    /*fakeWindow.Symbol = { hasInstance: Symbol('hasInstance') };
+    Object.defineProperty(fakeWindow, 'instanceof', {
+        value: function(obj: any, constructor: any) {
+            // 对所有instanceof检查返回true
+            return true;
+        },
+        writable: false,
+        configurable: false
+    });*/
 
     return fakeWindow;
 };
@@ -452,6 +602,8 @@ export function extractWidgetInfo(code: string): IWidgetTypeBase {
         type: widgetType.type,
         title: widgetType.title,
         icon: widgetType.icon,
+        docs: widgetType.docs?.url ?  widgetType.docs.url : '',
+        author: widgetType.author,
         version: widgetType.version,
         isInvisibleWidget: !!widgetType.isInvisibleWidget,
         isGlobalWidget: !!widgetType.isGlobalWidget
